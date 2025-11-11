@@ -1,29 +1,56 @@
 ﻿using System;
 
-// Прототип
-public abstract class Shape
+// Реалізація (Implementor)
+public interface IDrawingAPI
 {
-    public string Color { get; set; }
-    public Shape(string color) { Color = color; }
-
-    public abstract Shape Clone();
-    public abstract void Display();
+    void DrawCircle(double x, double y, double radius);
 }
 
-// Конкретний прототип
-public class Circle : Shape
+// Конкретні реалізації
+public class OpenGLAPI : IDrawingAPI
 {
-    public int Radius { get; set; }
-    public Circle(string color, int radius) : base(color) { Radius = radius; }
-
-    public override Shape Clone()
+    public void DrawCircle(double x, double y, double radius)
     {
-        return new Circle(this.Color, this.Radius);
+        Console.WriteLine($"OpenGL: Малюю коло в ({x},{y}) з радіусом {radius}");
+    }
+}
+
+public class DirectXAPI : IDrawingAPI
+{
+    public void DrawCircle(double x, double y, double radius)
+    {
+        Console.WriteLine($"DirectX: Малюю коло в ({x},{y}) з радіусом {radius}");
+    }
+}
+
+// Абстракція
+public abstract class Shape
+{
+    protected IDrawingAPI drawingAPI;
+
+    protected Shape(IDrawingAPI api)
+    {
+        drawingAPI = api;
     }
 
-    public override void Display()
+    public abstract void Draw();
+}
+
+// Конкретна абстракція
+public class Circle : Shape
+{
+    private double x, y, radius;
+
+    public Circle(double x, double y, double radius, IDrawingAPI api) : base(api)
     {
-        Console.WriteLine($"Коло: колір={Color}, радіус={Radius}");
+        this.x = x;
+        this.y = y;
+        this.radius = radius;
+    }
+
+    public override void Draw()
+    {
+        drawingAPI.DrawCircle(x, y, radius);
     }
 }
 
@@ -32,11 +59,10 @@ class Program
 {
     static void Main()
     {
-        Circle original = new Circle("Червоний", 10);
-        original.Display();
+        Shape circle1 = new Circle(5, 10, 7, new OpenGLAPI());
+        circle1.Draw();
 
-        Circle clone = (Circle)original.Clone();
-        clone.Color = "Синій";
-        clone.Display();
+        Shape circle2 = new Circle(15, 20, 10, new DirectXAPI());
+        circle2.Draw();
     }
 }
